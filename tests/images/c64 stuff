@@ -1,0 +1,19 @@
+POKE 53280, 0   << turn boarder color
+
+
+
+convert image16bit -depth 8 image8bit
+convert file-to-convert -depth 8bit output-file
+
+if you want to scale to full dynamic range at the same time
+
+convert image16bit -auto-level -depth 8 image8bit
+
+see
+
+-depth
+-auto-level
+
+
+--itchio_font_family: '04b_03'  html font c64
+font-family:'04b_03'
