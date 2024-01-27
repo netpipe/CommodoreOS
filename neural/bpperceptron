@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+#define NUM_INPUTS 2
+
+typedef struct {
+    float weights[NUM_INPUTS];
+    float bias;
+} NeuralNetwork;
+
+NeuralNetwork nn;
+
+// Initialize the neural network with random weights and bias
+void init_network(NeuralNetwork *nn) {
+    for (int i = 0; i < NUM_INPUTS; i++) {
+        nn->weights[i] = (float)rand() / RAND_MAX;
+    }
+    nn->bias = (float)rand() / RAND_MAX;
+}
+
+// Sigmoid activation function
+float sigmoid(float x) {
+    return 1.0 / (1.0 + exp(-x));
+}
+
+// Forward propagation
+float forward(NeuralNetwork *nn, float inputs[NUM_INPUTS]) {
+    float sum = nn->bias;
+    for (int i = 0; i < NUM_INPUTS; i++) {
+        sum += inputs[i] * nn->weights[i];
+    }
+    return sigmoid(sum);
+}
+
+// Training the neural network using backpropagation
+void train(NeuralNetwork *nn, float inputs[NUM_INPUTS], float target, float learning_rate) {
+    float output = forward(nn, inputs);
+    float error = target - output;
+
+    // Backpropagation
+    for (int i = 0; i < NUM_INPUTS; i++) {
+        nn->weights[i] += learning_rate * error * output * (1 - output) * inputs[i];
+    }
+    nn->bias += learning_rate * error * output * (1 - output);
+}
+
+int main() {
+    init_network(&nn);
+
+    // Example training data
+    float inputs[4][NUM_INPUTS] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+    float targets[4] = {0, 1, 1, 0}; // XOR logic
+
+    // Training loop
+    for (int epoch = 0; epoch < 1000; epoch++) {
+        for (int i = 0; i < 4; i++) {
+            train(&nn, inputs[i], targets[i], 0.1);
+        }
+    }
+
+    // Output results
+    for (int i = 0; i < 4; i++) {
+        printf("Input: %.0f, %.0f; Output: %.2f\n", inputs[i][0], inputs[i][1], forward(&nn, inputs[i]));
+    }
+
+    return 0;
+}
+

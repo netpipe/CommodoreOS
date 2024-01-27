@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define NUM_INPUTS 2
+
+typedef struct {
+    float weights[NUM_INPUTS];
+    float bias;
+} Perceptron;
+
+float step_function(float input) {
+    return input >= 0 ? 1 : 0;
+}
+
+float predict(Perceptron *p, float inputs[NUM_INPUTS]) {
+    float sum = p->bias;
+    for (int i = 0; i < NUM_INPUTS; i++) {
+        sum += inputs[i] * p->weights[i];
+    }
+    return step_function(sum);
+}
+
+void train(Perceptron *p, float inputs[NUM_INPUTS], float target, float lr) {
+    float prediction = predict(p, inputs);
+    float error = target - prediction;
+    for (int i = 0; i < NUM_INPUTS; i++) {
+        p->weights[i] += lr * error * inputs[i];
+    }
+    p->bias += lr * error;
+}
+
+int main() {
+    Perceptron p = {{0.0, 0.0}, 0.0};
+    float learning_rate = 0.1;
+
+    // Example training data: OR logic gate
+    float training_data[4][NUM_INPUTS] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+    float training_labels[4] = {0, 1, 1, 1};
+
+    // Training loop
+    for (int i = 0; i < 100; i++) {
+        for (int j = 0; j < 4; j++) {
+            train(&p, training_data[j], training_labels[j], learning_rate);
+        }
+    }
+
+    // Test
+    printf("Test Results:\n");
+    for (int i = 0; i < 4; i++) {
+        printf("%.0f OR %.0f = %.0f\n", training_data[i][0], training_data[i][1], predict(&p, training_data[i]));
+    }
+
+    return 0;
+}
+
