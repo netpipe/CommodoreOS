@@ -1,0 +1,63 @@
+#ifndef RAINBOW_TABLE_H
+#define RAINBOW_TABLE_H
+
+#include <stdint.h>
+#include <string.h>
+
+// Define the maximum number of entries in the hash table
+#define MAX_TABLE_SIZE 100
+
+// Define the maximum length of a word
+#define MAX_WORD_LENGTH 32
+
+// Define the hash function (a simple one for demonstration)
+uint32_t hash(const char* word) {
+    uint32_t hash_value = 0;
+    for (int i = 0; word[i] != '\0'; i++) {
+        hash_value = (hash_value * 31) + word[i];
+    }
+    return hash_value % MAX_TABLE_SIZE;
+}
+
+// Define the structure for a table entry
+typedef struct {
+    char word[MAX_WORD_LENGTH];
+    uint32_t hash_value;
+} TableEntry;
+
+// Define the hash table
+TableEntry hash_table[MAX_TABLE_SIZE];
+
+// Function to add a word to the hash table
+void addWord(const char* word) {
+    if (word == NULL || strlen(word) >= MAX_WORD_LENGTH) {
+        return;
+    }
+
+    uint32_t hash_value = hash(word);
+
+    // Check for collisions and handle them as needed
+    while (hash_table[hash_value].hash_value != 0) {
+        hash_value = (hash_value + 1) % MAX_TABLE_SIZE;
+    }
+
+    strncpy(hash_table[hash_value].word, word, MAX_WORD_LENGTH);
+    hash_table[hash_value].hash_value = hash_value;
+}
+
+// Function to lookup a word in the hash table
+const char* lookupWord(const char* word) {
+    uint32_t hash_value = hash(word);
+
+    while (hash_table[hash_value].hash_value != 0) {
+        if (strcmp(hash_table[hash_value].word, word) == 0) {
+            return hash_table[hash_value].word;
+        }
+        hash_value = (hash_value + 1) % MAX_TABLE_SIZE;
+    }
+
+    return NULL; // Word not found
+}
+
+#endif // RAINBOW_TABLE_H
+

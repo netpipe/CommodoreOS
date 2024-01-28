@@ -1,0 +1,115 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#define MAX_CODES 4096
+#define MAX_CODE_LENGTH 12
+
+// Structure for a dictionary entry
+typedef struct {
+    uint16_t prefix;
+    uint8_t character;
+} DictionaryEntry;
+
+// Function to initialize the dictionary
+void initDictionary(DictionaryEntry dictionary[]) {
+    for (int i = 0; i < 256; i++) {
+        dictionary[i].prefix = 0xFFFF; // Invalid prefix
+        dictionary[i].character = i;
+    }
+}
+
+// Function to compress data using LZW
+void compressLZW(const uint8_t* input, int inputSize) {
+    DictionaryEntry dictionary[MAX_CODES];
+    initDictionary(dictionary);
+
+    uint16_t nextCode = 256; // Start with ASCII codes for characters
+    uint16_t currentCode = input[0];
+    uint8_t currentChar;
+
+    for (int i = 1; i < inputSize; i++) {
+        currentChar = input[i];
+        uint16_t extendedCode = (currentCode << 8) | currentChar;
+
+        if (dictionary[extendedCode].prefix == 0xFFFF) {
+            // Output currentCode
+            printf("%d ", currentCode);
+
+            // Add extendedCode to dictionary
+            dictionary[extendedCode].prefix = currentCode;
+            dictionary[extendedCode].character = currentChar;
+
+            // Reset currentCode to currentChar
+            currentCode = currentChar;
+
+            // Check if the dictionary is full
+            if (nextCode < MAX_CODES) {
+                nextCode++;
+            } else {
+                // Reset the dictionary
+                initDictionary(dictionary);
+                nextCode = 256;
+            }
+        } else {
+            currentCode = extendedCode;
+        }
+    }
+
+    // Output the final code
+    printf("%d\n", currentCode);
+}
+
+// Function to decompress data using LZW
+void decompressLZW(const uint16_t* compressedData, int compressedSize) {
+    DictionaryEntry dictionary[MAX_CODES];
+    initDictionary(dictionary);
+
+    uint16_t currentCode = compressedData[0];
+    putchar(currentCode);
+
+    for (int i = 1; i < compressedSize; i++) {
+        uint16_t code = compressedData[i];
+
+        if (code < MAX_CODES) {
+            uint16_t character = code;
+            putchar(character);
+        } else {
+            uint16_t character = dictionary[currentCode].character;
+            putchar(character);
+        }
+
+        if (dictionary[currentCode].prefix == 0xFFFF) {
+            dictionary[currentCode].prefix = currentCode;
+            dictionary[currentCode].character = character;
+        }
+
+        if (currentCode < MAX_CODES) {
+            currentCode = code;
+        } else {
+            // Reset the dictionary
+            initDictionary(dictionary);
+            currentCode = code;
+        }
+    }
+}
+
+int main() {
+    const uint8_t input[] = "ABABABAABABABAABABABAABABABAABABABA";
+    const int inputSize = sizeof(input) - 1;
+
+    printf("Original Data: %s\n", input);
+
+    printf("Compressed Data: ");
+    compressLZW(input, inputSize);
+
+    // For simplicity, we directly use the compressed data in the decompression step
+    const uint16_t compressedData[] = {65, 66, 65, 257, 259, 256, 258, 260, 262};
+    const int compressedSize = sizeof(compressedData) / sizeof(compressedData[0]);
+
+    printf("Decompressed Data: ");
+    decompressLZW(compressedData, compressedSize);
+
+    return 0;
+}
+

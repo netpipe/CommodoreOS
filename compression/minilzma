@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#define MAX_MATCH_LENGTH 16
+#define DICTIONARY_SIZE 4096
+
+// Function to compress data using LZMA-like encoding
+void compressLZMA(const uint8_t* input, int inputSize) {
+    uint8_t dictionary[DICTIONARY_SIZE];
+    memset(dictionary, 0, sizeof(dictionary));
+
+    int pos = 0;
+    while (pos < inputSize) {
+        int bestLength = 0;
+        int bestOffset = 0;
+
+        for (int offset = 1; offset <= DICTIONARY_SIZE; offset++) {
+            int length = 0;
+            while (length < MAX_MATCH_LENGTH &&
+                   pos + length < inputSize &&
+                   input[pos + length] == dictionary[(pos + offset + length) % DICTIONARY_SIZE]) {
+                length++;
+            }
+
+            if (length > bestLength) {
+                bestLength = length;
+                bestOffset = offset;
+            }
+        }
+
+        // Output the match as a pair (offset, length)
+        printf("(%d, %d) ", bestOffset, bestLength);
+
+        // Update the dictionary
+        for (int i = 0; i < bestLength; i++) {
+            dictionary[(pos + i) % DICTIONARY_SIZE] = input[pos + i];
+        }
+
+        pos += bestLength;
+    }
+    printf("\n");
+}
+
+// Function to decompress data compressed with LZMA-like encoding
+void decompressLZMA(const uint8_t* compressedData, int compressedSize) {
+    uint8_t dictionary[DICTIONARY_SIZE];
+    memset(dictionary, 0, sizeof(dictionary));
+
+    int pos = 0;
+    while (pos < compressedSize) {
+        int offset = compressedData[pos++];
+        int length = compressedData[pos++];
+
+        for (int i = 0; i < length; i++) {
+            uint8_t character = dictionary[(pos + offset + i) % DICTIONARY_SIZE];
+            putchar(character);
+
+            // Update the dictionary
+            dictionary[(pos + i) % DICTIONARY_SIZE] = character;
+        }
+
+        pos += length;
+    }
+}
+
+int main() {
+    const uint8_t input[] = "ABABABAABABABAABABABAABABABAABABABA";
+    const int inputSize = sizeof(input) - 1;
+
+    printf("Original Data: %s\n", input);
+
+    printf("Compressed Data: ");
+    compressLZMA(input, inputSize);
+
+    const uint8_t compressedData[] = {2, 3, 3, 5, 4, 7, 6, 9, 5, 11};
+    const int compressedSize = sizeof(compressedData) / sizeof(compressedData[0]);
+
+    printf("Decompressed Data: ");
+    decompressLZMA(compressedData, compressedSize);
+
+    return 0;
+}
+
