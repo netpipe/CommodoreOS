@@ -182,7 +182,24 @@ unsigned int sqrt_fixed(unsigned int x) {
 
     return result;
 }
+// Function to get sine value for angles between 0-360 degrees
+int get_sine_value(int angle) {
+    angle %= 360; // Normalize angle to 0-359 degrees
 
+    if (angle <= 90) {
+        // 0-90 degrees, use the table directly
+        return sine_table[angle];
+    } else if (angle <= 180) {
+        // 91-180 degrees, use symmetry about 90 degrees
+        return sine_table[180 - angle];
+    } else if (angle <= 270) {
+        // 181-270 degrees, sine is negative and symmetrical to 91-180 degrees range
+        return -sine_table[angle - 180];
+    } else {
+        // 271-360 degrees, sine is negative and symmetrical to 0-90 degrees range
+        return -sine_table[360 - angle];
+    }
+}
 
 int main() {
     int angle = TO_FIXED_POINT(45); // 45 degrees in fixed-point format
@@ -207,6 +224,12 @@ int main() {
    printf("find_angle_for_sine: %d  \n", find_angle_for_sine(fixed_sin(angle)));
      //printf("find_angle_for_sine : %i  \n", FROM_FIXED_POINT(fixed_sin(angle)) / MAX_SINE_VALUE);
     printf("find_angle_for_sine2: %d  \n", find_angle_for_sine(1100));
+    
+        printf("Sine value at 45 degrees: %d\n", get_sine_value(45));
+    printf("Sine value at 150 degrees: %d\n", get_sine_value(150));
+    printf("Sine value at 225 degrees: %d\n", get_sine_value(225));
+    printf("Sine value at 315 degrees: %d\n", get_sine_value(315));
+
     
    //     printf("Fixed-point sine of 45 degrees converted backfromfixed: %d  \n", FROM_FIXED_POINT(fixed_sin(angle)));
   //      printf("Fixed-point sine of 45 degrees converted back: %i  \n", FROM_FIXED_POINT(TO_FIXED_POINT(45)));
