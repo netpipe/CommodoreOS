@@ -141,9 +141,11 @@ int main() {
     char buffer[64];
     unsigned int fileSize = 0;
     char dataToWrite[] = "Hello, Ramdisk!";
+       printf("successfully started!\n");
     clrscr();
+   //  printf("successfully!\n");
     initializeMemory();
-
+ printf("successfully memory!\n");
     // Create a sample file
 
     if (createFile("sample.txt", dataToWrite, strlen(dataToWrite)) == 0) {
