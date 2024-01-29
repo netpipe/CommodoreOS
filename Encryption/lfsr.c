@@ -16,11 +16,12 @@ void srand(uint16_t seed) {
 }
 
 int main() {
+uint16_t randomNumber;
     // Initialize the random number generator with a seed
     srand(time(NULL));  // Using the current time as a seed
 
     // Generate a random number
-    uint16_t randomNumber = rand();
+     randomNumber = rand();
 
     // Do something with randomNumber
     // ...

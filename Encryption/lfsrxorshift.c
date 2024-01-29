@@ -28,11 +28,12 @@ uint16_t rand() {
 }
 
 int main() {
+uint16_t randomNumber;
     // Seed the generators (if needed, you can modify the seeding mechanism)
     lfsr = 0xACE1u;
     xorshift = 0xC3D2u;
 
-    uint16_t randomNumber = rand();
+     randomNumber = rand();
     // Use randomNumber for your purposes
 
     return 0;

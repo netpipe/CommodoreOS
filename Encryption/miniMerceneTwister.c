@@ -50,6 +50,10 @@ uint16_t randomNumber;
      randomNumber = mt_rand();
     // Use randomNumber for your purposes
     printf ("random number %u",randomNumber);
+        mt_init(randomNumber); // Seed with a number
+     randomNumber = mt_rand();
+     printf ("random number %u",randomNumber);
+     
     return 0;
 }
 
