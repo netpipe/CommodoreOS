@@ -1,11 +1,12 @@
 #include <conio.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
 #define RAMDISK_SIZE 4096
 #define FILENAME_MAX_LENGTH 16
 #define SCREEN_ADDRESS 0x0400
+#define MAX_FILES 8
+#define FILE_MEMORY_SIZE (RAMDISK_SIZE / MAX_FILES)
 
 unsigned char ramdisk[RAMDISK_SIZE];
 
@@ -15,7 +16,7 @@ typedef struct {
     unsigned int size;
 } FileEntry;
 
-FileEntry files[8]; // Maximum of 8 files supported
+FileEntry files[MAX_FILES]; // Maximum of 8 files supported
 
 int numFiles = 0;
 
@@ -42,27 +43,8 @@ void readFromRamdisk(unsigned int offset, unsigned int length, void* buffer) {
     memcpy(buffer, &ramdisk[offset], length);
 }
 
-int allocateMemory(unsigned int size) {
-    // Search for a suitable free space on the Ramdisk
-    for (unsigned int i = 0; i < RAMDISK_SIZE; i++) {
-        if (ramdisk[i] == 0) { // Check for empty space
-            unsigned int j = i;
-            while (j < RAMDISK_SIZE && ramdisk[j] == 0 && j - i < size) {
-                j++;
-            }
-            if (j - i >= size) {
-                // Found enough consecutive empty space
-                return i;
-            }
-            i = j; // Skip to the end of this empty space
-        }
-    }
-    // No suitable space found
-    return -1;
-}
-
 int createFile(const char* filename, const void* data, unsigned int size) {
-    if (numFiles >= 8) {
+    if (numFiles >= MAX_FILES) {
         // Maximum file limit reached
         return -1;
     }
@@ -72,19 +54,35 @@ int createFile(const char* filename, const void* data, unsigned int size) {
         return -2;
     }
 
-    int offset = allocateMemory(size);
-    if (offset < 0) {
-        // Not enough free space on the Ramdisk
+    if (size > FILE_MEMORY_SIZE) {
+        // File size exceeds available memory per file
         return -3;
     }
 
-    // Write the file data to the allocated space on the Ramdisk
+    // Find an available slot in the file table
+    int fileIndex = -1;
+    for (int i = 0; i < MAX_FILES; i++) {
+        if (files[i].size == 0) {
+            fileIndex = i;
+            break;
+        }
+    }
+
+    if (fileIndex == -1) {
+        // No available slot in the file table
+        return -4;
+    }
+
+    // Calculate the offset for this file in Ramdisk
+    unsigned int offset = fileIndex * FILE_MEMORY_SIZE;
+
+    // Write the file data to the Ramdisk
     writeToRamdisk(offset, size, data);
 
     // Set the file entry information
-    strncpy(files[numFiles].filename, filename, FILENAME_MAX_LENGTH);
-    files[numFiles].offset = offset;
-    files[numFiles].size = size;
+    strncpy(files[fileIndex].filename, filename, FILENAME_MAX_LENGTH);
+    files[fileIndex].offset = offset;
+    files[fileIndex].size = size;
 
     numFiles++;
 
@@ -92,7 +90,7 @@ int createFile(const char* filename, const void* data, unsigned int size) {
 }
 
 int readFile(const char* filename, void* buffer, unsigned int* size) {
-    for (int i = 0; i < numFiles; i++) {
+    for (int i = 0; i < MAX_FILES; i++) {
         if (strcmp(files[i].filename, filename) == 0) {
             if (buffer != NULL) {
                 readFromRamdisk(files[i].offset, files[i].size, buffer);
