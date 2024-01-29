@@ -31,14 +31,16 @@ typedef struct {
 MemoryBlock memoryBlocks[MAX_FILES];
 
 void initializeMemory() {
-    for (int i = 0; i < MAX_FILES; i++) {
+int i;
+    for ( i = 0; i < MAX_FILES; i++) {
         memoryBlocks[i].offset = i * MEMORY_BLOCK_SIZE;
         memoryBlocks[i].size = 0;
     }
 }
 
 int allocateMemory(unsigned int size) {
-    for (int i = 0; i < MAX_FILES; i++) {
+int i;
+    for ( i = 0; i < MAX_FILES; i++) {
         if (memoryBlocks[i].size == 0 && memoryBlocks[i].offset + size <= RAMDISK_SIZE) {
             memoryBlocks[i].size = size;
             return memoryBlocks[i].offset;
@@ -48,7 +50,8 @@ int allocateMemory(unsigned int size) {
 }
 
 void deallocateMemory(unsigned int offset) {
-    for (int i = 0; i < MAX_FILES; i++) {
+int i;
+    for (i = 0; i < MAX_FILES; i++) {
         if (memoryBlocks[i].offset == offset) {
             memoryBlocks[i].size = 0;
             break;
@@ -75,6 +78,7 @@ void readFromRamdisk(unsigned int offset, unsigned int length, void* buffer) {
 }
 
 int createFile(const char* filename, const void* data, unsigned int size) {
+int offset;
     if (numFiles >= MAX_FILES) {
         // Maximum file limit reached
         return -1;
@@ -85,7 +89,7 @@ int createFile(const char* filename, const void* data, unsigned int size) {
         return -2;
     }
 
-    int offset = allocateMemory(size);
+    offset = allocateMemory(size);
     if (offset < 0) {
         // Not enough free memory on the Ramdisk
         return -3;
@@ -105,7 +109,8 @@ int createFile(const char* filename, const void* data, unsigned int size) {
 }
 
 int deleteFile(const char* filename) {
-    for (int i = 0; i < numFiles; i++) {
+int i;
+    for (i = 0; i < numFiles; i++) {
         if (strcmp(files[i].filename, filename) == 0) {
             deallocateMemory(files[i].offset);
             memset(&files[i], 0, sizeof(FileEntry));
@@ -117,7 +122,8 @@ int deleteFile(const char* filename) {
 }
 
 int readFile(const char* filename, void* buffer, unsigned int* size) {
-    for (int i = 0; i < numFiles; i++) {
+int i;
+    for (i = 0; i < numFiles; i++) {
         if (strcmp(files[i].filename, filename) == 0) {
             if (buffer != NULL) {
                 readFromRamdisk(files[i].offset, files[i].size, buffer);
@@ -132,12 +138,14 @@ int readFile(const char* filename, void* buffer, unsigned int* size) {
 }
 
 int main() {
+    char buffer[64];
+    unsigned int fileSize = 0;
+    char dataToWrite[] = "Hello, Ramdisk!";
     clrscr();
-    initRamdisk();
     initializeMemory();
 
     // Create a sample file
-    char dataToWrite[] = "Hello, Ramdisk!";
+
     if (createFile("sample.txt", dataToWrite, strlen(dataToWrite)) == 0) {
         cprintf("File 'sample.txt' created successfully!\n");
     } else {
@@ -152,8 +160,7 @@ int main() {
     }
 
     // Read and display the contents of the deleted file (should fail)
-    char buffer[64];
-    unsigned int fileSize = 0;
+
     if (readFile("sample.txt", buffer, &fileSize) == 0) {
         cprintf("Contents of 'sample.txt':\n");
         buffer[fileSize] = '\0'; // Null-terminate for printing
