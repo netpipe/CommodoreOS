@@ -35,5 +35,5 @@ done:
 
 SCREEN_ADDRESS = $0400
 MESSAGE:
-    .text "Hello, World!"
+    .asciiz "Hello, World!"
 
