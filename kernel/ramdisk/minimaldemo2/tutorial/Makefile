@@ -80,7 +80,7 @@ endif
 samples: $(EXELIST_$(SYS))
 
 hello: hello.c text.s
-	$(CL) -t $(SYS) -o hello hello.c text.s
+	$(CL) -t $(SYS) -o hello.prg hello.c text.s
 
 # empty target used to skip systems that will not work with any program in this dir
 notavailable:
