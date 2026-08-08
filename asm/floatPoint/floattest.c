@@ -8,6 +8,7 @@ typedef signed long int32_t;
 
 #include <stdint.h>
 #include <stdio.h>
+#include <conio.h>
 
 // Basic IEEE 754 single-precision float type
 typedef uint32_t f32;
@@ -118,7 +119,8 @@ int main(void) {
     f32 neg = f32_neg(b);
     f32 sqr = f32_sqrt(a);
     f32 abv = f32_abs(neg);
-
+    clrscr();
+    clrscr();
     printf("a + b = %ld\n", f32_to_int(sum));
     printf("a - b = %ld\n", f32_to_int(diff));
     printf("a * b = %ld\n", f32_to_int(prod));
